@@ -17,5 +17,5 @@ newrelic:
 #
 agents:
   # this is where configuration for agents belongs
-  pmta:
-    hertz: 1
+  #pmta:
+    #hertz: 1
