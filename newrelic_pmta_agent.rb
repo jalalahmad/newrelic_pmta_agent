@@ -5,23 +5,27 @@ require "bundler/setup"
 
 require "newrelic_plugin"
 require "mechanize"
+require "socket"
 
 module PmtaAgent
 
   class Agent < NewRelic::Plugin::Agent::Base
 
     agent_guid "com.jalalahmad.newrelic.plugin.pmta"
-    agent_version "0.0.2"
+    agent_version "0.0.3"
     agent_config_options :hertz  # frequency of the periodic functions
-    agent_human_labels("PowerMTA Agent") { "PowerMTA statistics" }
+    agent_human_labels("PowerMTA Agent") { Socket.gethostname }
 
     ROOT_URL = "http://localhost:8080"
     QUEUE_URL = "/queues?format=xml"
     STATUS_URL = "/status?format=xml"
+    DOMAIN_URL = "/domains?format=xml"
 
     def poll_cycle
       @agent= Mechanize.new unless @agent
       report_status
+      report_queues
+      report_domains
     end
 
     def report_status
@@ -33,9 +37,35 @@ module PmtaAgent
       report_metric "Status/KiloBytes/In" , "kb", current_status.search('in/kb').text()
       report_metric "Status/KiloBytes/Out" , "kb", current_status.search('out/kb').text()
     end
+
+    def report_queues
+      current_queues = queues()
+      queues.each do |queue|
+        queue_name = "Queues/" + queue.search('name').text()  
+        report_metric queue_name + "/Recepients" , "recpts", queue.search('rcp').text() 
+        report_metric queue_name + "/KiloBytes" , "kb", queue.search('kb').text()
+        report_metric queue_name + "/Connections" , "conns", queue.search('conn').text()
+      end
+    end
+
+    def report_domains
+      current_domains = domains()
+      domains.each do |domain|
+        domain_name = "Domains/" + queue.search('name').text()  
+        report_metric domain_name + "/Recepients" , "recpts", queue.search('rcp').text() 
+        report_metric domain_name + "/KiloBytes" , "kb", queue.search('kb').text()
+        report_metric domain_name + "/Connections" , "conns", queue.search('conn').text()
+      end
+    end
+
+    def domains
+      response = @agent.get( ROOT_URL + DOMAIN_URL )
+      response.search('/rsp/data/domain')
+    end
+
     def queues
       response = @agent.get( ROOT_URL + QUEUE_URL )
-
+      response.search('/rsp/data/queue')
     end
     def status
       response = @agent.get( ROOT_URL + STATUS_URL )
