@@ -12,7 +12,7 @@ module PmtaAgent
   class Agent < NewRelic::Plugin::Agent::Base
 
     agent_guid "com.jalalahmad.newrelic.plugin.pmta"
-    agent_version "0.0.3"
+    agent_version "0.0.4"
     agent_config_options :hertz  # frequency of the periodic functions
     agent_human_labels("PowerMTA Agent") { Socket.gethostname }
 
@@ -51,10 +51,10 @@ module PmtaAgent
     def report_domains
       current_domains = domains()
       domains.each do |domain|
-        domain_name = "Domains/" + queue.search('name').text()  
-        report_metric domain_name + "/Recepients" , "recpts", queue.search('rcp').text() 
-        report_metric domain_name + "/KiloBytes" , "kb", queue.search('kb').text()
-        report_metric domain_name + "/Connections" , "conns", queue.search('conn').text()
+        domain_name = "Domains/" + domain.search('name').text()  
+        report_metric domain_name + "/Recepients" , "recpts", domain.search('rcp').text() 
+        report_metric domain_name + "/KiloBytes" , "kb", domain.search('kb').text()
+        report_metric domain_name + "/Connections" , "conns", domain.search('conn').text()
       end
     end
 
