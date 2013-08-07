@@ -21,8 +21,11 @@ module PmtaAgent
 
     def poll_cycle
       @agent= Mechanize.new unless @agent
+      report_status
+    end
+
+    def report_status
       current_status= status()
-puts current_status.search('in/msg').text()
       report_metric "Status/Messages/In","msgs" , current_status.search('in/msg').text()
       report_metric "Status/Messages/Out" , "msgs", current_status.search('out/msg').text()
       report_metric "Status/Recepients/In" , "recpts",current_status.search('in/rcp').text()
@@ -30,7 +33,6 @@ puts current_status.search('in/msg').text()
       report_metric "Status/KiloBytes/In" , "kb", current_status.search('in/kb').text()
       report_metric "Status/KiloBytes/Out" , "kb", current_status.search('out/kb').text()
     end
-
     def queues
       response = @agent.get( ROOT_URL + QUEUE_URL )
 
