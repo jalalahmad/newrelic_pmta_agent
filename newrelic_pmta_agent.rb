@@ -12,7 +12,7 @@ module PmtaAgent
   class Agent < NewRelic::Plugin::Agent::Base
 
     agent_guid "com.jalalahmad.newrelic.plugin.pmta"
-    agent_version "0.0.3"
+    agent_version "0.0.4"
     agent_config_options :hertz  # frequency of the periodic functions
     agent_human_labels("PowerMTA Agent") { Socket.gethostname }
 
