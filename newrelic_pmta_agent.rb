@@ -4,6 +4,7 @@ require "rubygems"
 require "bundler/setup"
 
 require "newrelic_plugin"
+require "mechanize"
 
 module PmtaAgent
 
@@ -14,28 +15,28 @@ module PmtaAgent
     agent_config_options :hertz  # frequency of the periodic functions
     agent_human_labels("PowerMTA Agent") { "PowerMTA statistics" }
 
-    ROOT_URL = :SERVER_ROOT || "http://localhost:8080"
+    ROOT_URL = "http://localhost:8080"
     QUEUE_URL = "/queues?format=xml"
     STATUS_URL = "/status?format=xml"
-    @agent = Mechanize.new
-
 
     def poll_cycle
-      stats = status
-      report_metric "Component/Status/Messages/In[msgs]" , stats.in.msg.text()
-      report_metric "Component/Status/Messages/Out[msgs]" , stats.out.msg.text()
-      report_metric "Component/Status/Recepients/In[rcpts]" , stats.in.rcp.text()
-      report_metric "Component/Status/Recepients/Out[rcpts]" , stats.out.rcp.text()
-      report_metric "Component/Status/Bytes/In[kb]" , stats.in.kb.text()
-      report_metric "Component/Status/Bytes/Out[kb]" , stats.out.kb.text()
+      @agent= Mechanize.new unless @agent
+      current_status= status()
+puts current_status.search('in/msg').text()
+      report_metric "Status/Messages/In","msgs" , current_status.search('in/msg').text()
+      report_metric "Status/Messages/Out" , "msgs", current_status.search('out/msg').text()
+      report_metric "Status/Recepients/In" , "recpts",current_status.search('in/rcp').text()
+      report_metric "Status/Recepients/Out" , "recpts", current_status.search('out/rcp').text()
+      report_metric "Status/KiloBytes/In" , "kb", current_status.search('in/kb').text()
+      report_metric "Status/KiloBytes/Out" , "kb", current_status.search('out/kb').text()
     end
 
     def queues
-      response = @agent.get ROOT_URL + QUEUE_URL
+      response = @agent.get( ROOT_URL + QUEUE_URL )
 
     end
     def status
-      response = @agent.get ROOT_URL + STATUS_URL
+      response = @agent.get( ROOT_URL + STATUS_URL )
       response.search('/rsp/data/status/traffic/lastMin')
     end
 
