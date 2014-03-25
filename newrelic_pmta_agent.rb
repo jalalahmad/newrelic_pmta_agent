@@ -23,6 +23,7 @@ module PmtaAgent
 
     def poll_cycle
       @agent= Mechanize.new unless @agent
+      @agent.pluggable_parser['text/html'] = Mechanize::XmlFile
       report_status
       report_queues
       report_domains
